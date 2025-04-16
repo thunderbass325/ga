@@ -1,4 +1,7 @@
-"scripts": {
-  "build": "echo 'No build step needed'",
-  "start": "node index.js"
+{
+  "name": "your-project",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "echo 'No build step required'"
+  }
 }
