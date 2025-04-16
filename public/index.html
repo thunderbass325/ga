@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Message Sender</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    input, button { margin: 5px 0; padding: 8px; width: 100%; }
+    #responseLog { height: 300px; overflow-y: auto; background: #f4f4f4; padding: 10px; border: 1px solid #ccc; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+
+  <h2>AI Query Sender</h2>
+  <input type="text" id="apiKeyInput" placeholder="Enter your API Key here" />
+  <button id="toggleBtn">Start</button>
+
+  <h3>Live Responses:</h3>
+  <div id="responseLog"></div>
+
+  <script>
+    const messageContents = [
+      "What are the rarest flora and fauna species in the world, and what are the reasons behind their rarity? Include examples from different continents and explain their ecological significance.",
+      "Provide a detailed 2000-word article on the importance of preserving historical monuments, including the challenges faced, methods of conservation, and cultural impact on present and future generations.",
+      "What are the different species of tigers found across the world, what are their specific habitats, and what conservation efforts are being made to protect them?",
+      "What are the major species of snakes globally, what are their preferred habitats, and how do they adapt to different ecosystems? Include venomous and non-venomous examples.",
+      "Who invented the telephone, what led to its invention, and how did it revolutionize communication in its early stages and beyond?",
+      "Who invented the radio, what were the scientific principles behind it, and what impact did it have on global communication and information dissemination?",
+      "Who were the first fifteen presidents of the United States, what were the key events during their presidencies, and what major contributions did each make to the nation's development?",
+      "What are the most effective methods and strategies to study efficiently, including scientifically backed techniques to improve focus, retention, and time management?",
+      "What is a black hole in the context of astrophysics, how is it formed, what are its types, and what significance does it hold in understanding the universe?",
+      "What is the significance of the French Revolution in world history, what were its causes and consequences, and how did it influence modern political ideologies and systems?",
+      "How did India fight for independence from British rule, what were the major events and movements involved, and why is this struggle significant in both national and global contexts?"
+    ];
+
+    let currentMessageIndex = 0;
+    let interval = null;
+
+    async function sendMessage(apiKey) {
+      const messageContent = messageContents[currentMessageIndex];
+      currentMessageIndex = (currentMessageIndex + 1) % messageContents.length;
+
+      const response = await fetch('/.netlify/functions/proxy', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          messages: [
+            { role: "system", content: messageContent },
+            { role: "user", content: "Thank you." }
+          ]
+        })
+      });
+
+      const log = document.getElementById('responseLog');
+      const data = await response.json();
+      const reply = data.choices?.[0]?.message?.content || "No response received.";
+
+      log.innerText += `\n\n✅ Query: ${messageContent}\n🔁 Response:\n${reply}\n-----------------------------------`;
+      log.scrollTop = log.scrollHeight;
+    }
+
+    const toggleBtn = document.getElementById('toggleBtn');
+    toggleBtn.addEventListener('click', () => {
+      const apiKey = document.getElementById('apiKeyInput').value.trim();
+      if (!apiKey) return alert("Enter your API key first.");
+
+      if (interval) {
+        clearInterval(interval);
+        interval = null;
+        toggleBtn.innerText = "Start";
+      } else {
+        sendMessage(apiKey); // Send once immediately
+        interval = setInterval(() => sendMessage(apiKey), 3000);
+        toggleBtn.innerText = "Stop";
+      }
+    });
+  </script>
+</body>
+</html>
