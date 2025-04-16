@@ -1,3 +1,6 @@
 [build]
-  publish = "public"
-  functions = "netlify/functions"
+  publish = "dist"     # or "." if you serve from root
+  command = "npm run build"  # Or remove if no build step
+
+[build.environment]
+  GO_VERSION = "1.19"
